@@ -20,6 +20,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background: radial-gradient(circle at center, #1a103d 0%, #080418 100%); /* Instant visual placeholder */
 }
 
 /* Background Video */
@@ -31,7 +32,7 @@
     object-fit: cover;
     z-index: 0;
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 0.4s ease-out; /* Faster, snappier fade-in */
 }
 .lp-video-loaded {
     opacity: 1;
