@@ -6,7 +6,7 @@ echo.
 echo Starting both Backend and Frontend servers...
 echo.
 
-start "Backend Server" cmd /k "cd backend && python app.py"
+start "Backend Server" cmd /k "set PYTHONIOENCODING=utf-8 && cd backend && python app.py"
 timeout /t 3 /nobreak > nul
 start "Frontend Server" cmd /k "npm run dev"
 

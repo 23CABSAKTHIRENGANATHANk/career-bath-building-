@@ -11,6 +11,7 @@ pip install -r requirements.txt
 echo.
 
 echo Starting Flask server...
+set PYTHONIOENCODING=utf-8
 python app.py
 
 pause

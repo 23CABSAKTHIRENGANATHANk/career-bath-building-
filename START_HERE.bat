@@ -68,7 +68,7 @@ echo.
 pause
 
 echo Starting backend server...
-start "Backend Server" cmd /k "cd backend && python app.py"
+start "Backend Server" cmd /k "set PYTHONIOENCODING=utf-8 && cd backend && python app.py"
 
 timeout /t 3 /nobreak >nul
 

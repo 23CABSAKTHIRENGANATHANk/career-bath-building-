@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import ProfileForm from './components/ProfileForm';
 import CareerDashboard from './components/CareerDashboard';
 import CareerReport from './components/CareerReport';
 import ErrorBoundary from './components/ErrorBoundary';
 import ChatMentor from './components/ChatMentor';
+import LandingPage from './components/LandingPage';
 
 function App() {
     // Initialize state from localStorage if available
@@ -45,8 +47,9 @@ function App() {
             <Router>
                 <div className="app">
                     <Routes>
+                        <Route path="/" element={<LandingPage />} />
                         <Route
-                            path="/"
+                            path="/start"
                             element={
                                 <ProfileForm
                                     onAnalysisComplete={handleAnalysisComplete}
@@ -60,7 +63,7 @@ function App() {
                                 analysisData ? (
                                     <CareerDashboard data={analysisData} onReset={handleReset} />
                                 ) : (
-                                    <Navigate to="/" replace />
+                                    <Navigate to="/start" replace />
                                 )
                             }
                         />
