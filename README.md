@@ -1,8 +1,12 @@
-# Career Path Builder
+# 🚀 Career Path Builder
+### Personalized AI-Powered Career Analysis & Mentorship Platform
 
-🎯 **Your Personalized Career Path Builder**
+**Designed & Developed by SAKTHI RENGANATHAN K.**
 
-An AI-powered career intelligence system that provides personalized career guidance, skill gap analysis, and learning roadmaps based on user profiles, skills, and interests.
+---
+
+## 🌟 Overview
+Career Path Builder is a premium, full-stack AI application designed to help professionals and students navigate their career journeys with precision. By analyzing resumes and market trends in real-time, the system provides personalized roadmaps, skill gap analysis, and tailored recommendations.
 
 ## 🌟 Features
 
