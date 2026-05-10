@@ -2,6 +2,28 @@
    DISABLE FLOATING & FIX RESPONSIVE LAYOUT
    ============================================ */
 
+/* Perfect Size & Alignment for Report Header */
+.report-header-enhanced {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px !important;
+}
+
+.report-logo {
+    height: 120px !important;
+    width: auto !important;
+    margin-bottom: 20px !important;
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.report-logo:hover {
+    transform: scale(1.05);
+}
+
 /* Disable all background animations and decorations */
 .report-viewer::before,
 .report-viewer::after,
@@ -46,6 +68,32 @@
     animation: none !important;
     transform: none !important;
     transition: none !important;
+}
+
+/* Force all text elements to be static and horizontal */
+h1, h2, h3, h4, h5, h6, p, span, div, li, a {
+    transform: none !important;
+    rotate: none !important;
+    animation: none !important;
+    -webkit-transform: none !important;
+    -moz-transform: none !important;
+}
+
+/* Aggressively hide any potential watermark or background title elements */
+[class*="watermark"], 
+[class*="background-title"],
+[class*="floating-title"],
+.score-circle::before, 
+.score-circle::after,
+.premium-card::before,
+.premium-card::after,
+.report-section::before,
+.report-section::after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    z-index: -100 !important;
 }
 
 /* Disable particle float */
@@ -223,3 +271,4 @@ body {
         padding: 20px 15px;
     }
 }
+@media (max-width: 480px) { .report-logo { height: 70px !important; margin-bottom: 15px !important; } }

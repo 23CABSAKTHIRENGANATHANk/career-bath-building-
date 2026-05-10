@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Report.css';
-import './Report3D.css';
-import './ReportVideo.css';
 import './ReportStable.css';
 import './ReportGridFix.css';
 import logoIcon from '../assets/logo.png';
