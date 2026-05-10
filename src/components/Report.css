@@ -176,6 +176,24 @@
     -webkit-backdrop-filter: blur(10px);
 }
 
+.nav-btn-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.dashboard-btn {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+    color: #A78BFA !important;
+}
+
+.dashboard-btn:hover {
+    background: rgba(139, 92, 246, 0.25) !important;
+    border-color: rgba(139, 92, 246, 0.6) !important;
+    color: #fff !important;
+}
+
 .nav-back-btn:hover {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(59, 130, 246, 0.25) 100%);
     border-color: rgba(139, 92, 246, 0.5);
@@ -210,8 +228,13 @@
     }
 
     .nav-back-btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+    
+    .nav-btn-group {
+        gap: 6px;
     }
 }
 
@@ -2046,7 +2069,7 @@ div {
     writing-mode: horizontal-tb !important;
 }
 
-/* Remove any transforms that might rotate text */
+/* Remove any rotation that might affect text readability */
 h1,
 h2,
 h3,
@@ -2060,7 +2083,6 @@ div,
 .strategy-phase,
 .phase-badge,
 .focus-tag {
-    transform: none !important;
     rotate: none !important;
 }
 
@@ -2149,6 +2171,55 @@ div,
     .cta-section h2 {
         font-size: 1.5rem !important;
     }
+
+    .cta-actions {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .cta-button {
+        width: 100% !important;
+    }
+}
+
+/* Profile Summary Grid Fix */
+.profile-summary-card {
+    margin-bottom: 20px;
+    background: rgba(15, 23, 42, 0.6) !important;
+}
+
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.profile-detail-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.profile-detail-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.profile-detail-value {
+    font-weight: 600;
+    color: #F8FAFC;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+    .profile-details-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2164,4 +2235,16 @@ div,
         padding: 6px 12px !important;
         font-size: 0.75rem !important;
     }
+}
+/* Report Footer Author */
+.footer-author-sig {
+    margin: 1rem 0;
+    font-size: 1rem;
+    color: #94A3B8;
+}
+
+.sig-name {
+    color: #8B5CF6;
+    font-weight: 800;
+    letter-spacing: 1px;
 }

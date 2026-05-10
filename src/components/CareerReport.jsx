@@ -240,13 +240,22 @@ function CareerReport({ data: propData }) {
         <div className="report-viewer">
             {/* Top Navigation Bar */}
             <div className="report-header-nav">
-                <button
-                    onClick={() => navigate('/')}
-                    className="nav-back-btn"
-                    title="Return to home page"
-                >
-                    ← Back to Home
-                </button>
+                <div className="nav-btn-group">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="nav-back-btn"
+                        title="Return to home page"
+                    >
+                        🏠 Home
+                    </button>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="nav-back-btn dashboard-btn"
+                        title="Return to interactive dashboard"
+                    >
+                        📊 Dashboard
+                    </button>
+                </div>
                 <div className="nav-title">Career Report</div>
                 <div className="nav-spacer"></div>
             </div>
@@ -268,13 +277,13 @@ function CareerReport({ data: propData }) {
 
                 {/* User Profile Summary */}
                 {user_profile && (
-                    <div className="report-section glass-card" style={{ marginBottom: '20px', background: 'rgba(15, 23, 42, 0.6)' }}>
-                        <h2 style={{ fontSize: '1.25rem', marginBottom: '15px' }}>👤 Professional Profile</h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div className="report-section glass-card profile-summary-card">
+                        <h2 className="profile-section-title">👤 Professional Profile</h2>
+                        <div className="profile-details-grid">
                             {user_profile.education && user_profile.education.degrees && user_profile.education.degrees.length > 0 && (
-                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                    <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>🎓 Education</div>
-                                    <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>
+                                <div className="profile-detail-item">
+                                    <div className="profile-detail-label">🎓 Education</div>
+                                    <div className="profile-detail-value">
                                         {user_profile.education.degrees.map((d, i) => {
                                             const showField = d.field && d.field !== 'General' && !d.degree.toLowerCase().includes(d.field.toLowerCase()) && !d.field.toLowerCase().includes(d.degree.toLowerCase());
                                             return (
@@ -287,15 +296,15 @@ function CareerReport({ data: propData }) {
                                 </div>
                             )}
                             {user_profile.city && (
-                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                    <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>📍 Location</div>
-                                    <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>{user_profile.city}</div>
+                                <div className="profile-detail-item">
+                                    <div className="profile-detail-label">📍 Location</div>
+                                    <div className="profile-detail-value">{user_profile.city}</div>
                                 </div>
                             )}
                             {user_profile.experience && user_profile.experience.years !== undefined && user_profile.experience.years > 0 && (
-                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                    <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>💼 Experience</div>
-                                    <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>{user_profile.experience.years}+ Years</div>
+                                <div className="profile-detail-item">
+                                    <div className="profile-detail-label">💼 Experience</div>
+                                    <div className="profile-detail-value">{user_profile.experience.years}+ Years</div>
                                 </div>
                             )}
                         </div>
@@ -550,8 +559,9 @@ function CareerReport({ data: propData }) {
                 </div>
 
                 {/* Footer */}
-                <div className="report-footer no-print" >
+                <div className="report-footer no-print">
                     <p>🤖 Generated by Career Path Builder System</p>
+                    <p className="footer-author-sig">Designed & Developed by <span className="sig-name">SAKTHI RENGANATHAN K.</span></p>
                     <p className="footer-disclaimer">This report is based on your profile analysis. Career paths are flexible and can change based on market trends and personal preferences.</p>
                 </div>
             </div>

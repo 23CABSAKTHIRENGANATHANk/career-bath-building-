@@ -218,6 +218,20 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
             </div>
 
             <div className="container">
+                {/* Back to Home */}
+                <div style={{ marginBottom: '1rem' }}>
+                    <a href="/" style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                        color: '#A78BFA', textDecoration: 'none', fontSize: '0.9rem',
+                        fontWeight: 600, opacity: 0.85, transition: 'opacity 0.2s'
+                    }}
+                        onMouseOver={e => e.currentTarget.style.opacity = 1}
+                        onMouseOut={e => e.currentTarget.style.opacity = 0.85}
+                    >
+                        ← Back to Home
+                    </a>
+                </div>
+
                 <div className="form-header fade-in holographic-card">
                     <img src={logoIcon} alt="Career Path Builder Logo" className="app-logo-header" />
                     <h1 className="neon-text">Career Path Builder</h1>

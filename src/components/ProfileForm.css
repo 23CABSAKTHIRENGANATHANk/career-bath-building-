@@ -121,6 +121,7 @@
   background: rgba(30, 41, 59, 0.6);
   border-radius: 2px;
   overflow: hidden;
+  display: block;
 }
 
 .progress-fill {
@@ -128,6 +129,31 @@
   background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
   transition: width 0.5s ease;
   box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+@media (max-width: 600px) {
+  .progress-steps {
+    gap: 0.5rem;
+  }
+  
+  .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .step-label {
+    display: none; /* Hide labels on very small screens to avoid clutter */
+  }
+  
+  .progress-step.active .step-label {
+    display: block;
+    position: absolute;
+    top: 100%;
+    white-space: nowrap;
+    margin-top: 5px;
+    font-size: 0.75rem;
+  }
 }
 
 /* Form Card */
@@ -549,26 +575,52 @@
 
 /* MOBILE FIX (< 480px) */
 @media (max-width: 480px) {
+  .profile-form-container {
+    padding: 1rem 0.5rem;
+  }
+
   .form-header h1 {
-    font-size: 1.75rem !important;
+    font-size: 1.6rem !important;
   }
 
   .form-header p {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
   }
 
   .form-card {
-    padding: 1.25rem !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem;
   }
 
   .progress-step .step-number {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .form-actions {
+    gap: 0.75rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
   }
 
-  .progress-step .step-label {
-    font-size: 0.75rem;
+  .city-selector-section h3 {
+    font-size: 1.25rem;
+  }
+
+  .resume-upload-area {
+    margin-bottom: 1.5rem;
+  }
+
+  .upload-label {
+    min-height: 150px;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
   }
 }
 
@@ -619,9 +671,15 @@
 
 .social-inputs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.25rem;
   margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .social-inputs-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group-minimal {

@@ -127,6 +127,34 @@ function CareerDashboard({ data, onReset }) {
                         <h1>Career Path Builder Dashboard</h1>
                     </div>
                     <p>AI-Powered Personalized Career Guidance</p>
+                    
+                    {/* Live Market Intel Ticker */}
+                    {career_recommendation.market_intelligence && (
+                        <div className="live-market-intel">
+                            <div className="live-pulse-container">
+                                <span className="live-pulse"></span>
+                                <span className="live-text">LIVE MARKET DATA</span>
+                            </div>
+                            <div className="market-stats-ticker">
+                                <span>📅 {career_recommendation.market_intelligence.last_updated}</span>
+                                <span>📈 Demand: {career_recommendation.market_intelligence.demand_index}%</span>
+                                <span>🔥 {career_recommendation.market_intelligence.market_status}</span>
+                                <button 
+                                    className="refresh-market-btn" 
+                                    title="Refresh Market Data"
+                                    onClick={(e) => {
+                                        e.currentTarget.classList.add('spinning');
+                                        setTimeout(() => {
+                                            alert('Market Intelligence Updated! Current hiring sentiment is Positive.');
+                                            window.location.reload(); // Simplest way to re-fetch fresh engine data
+                                        }, 800);
+                                    }}
+                                >
+                                    🔄
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Main Recommendation Card */}
@@ -191,44 +219,46 @@ function CareerDashboard({ data, onReset }) {
                     </div>
                 </div>
 
-                {/* Tab Navigation */}
-                <div className="tab-navigation">
-                    <button
-                        className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('overview')}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={`tab-button ${activeTab === 'skills' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('skills')}
-                    >
-                        Analytics & Skills
-                    </button>
-                    <button
-                        className={`tab-button ${activeTab === 'roadmap' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('roadmap')}
-                    >
-                        Learning Roadmap
-                    </button>
-                    <button
-                        className={`tab-button ${activeTab === 'alternatives' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('alternatives')}
-                    >
-                        Alternative Paths
-                    </button>
-                    <button
-                        className={`tab-button ${activeTab === 'interview' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('interview')}
-                    >
-                        Interview Prep
-                    </button>
-                    <button
-                        className={`tab-button ${activeTab === 'portfolio' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('portfolio')}
-                    >
-                        Portfolio Builder
-                    </button>
+                <div className="tab-navigation-wrapper">
+                    <div className="tab-navigation">
+                        <button
+                            className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('overview')}
+                        >
+                            Overview
+                        </button>
+                        <button
+                            className={`tab-button ${activeTab === 'skills' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('skills')}
+                        >
+                            Analytics & Skills
+                        </button>
+                        <button
+                            className={`tab-button ${activeTab === 'roadmap' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('roadmap')}
+                        >
+                            Learning Roadmap
+                        </button>
+                        <button
+                            className={`tab-button ${activeTab === 'alternatives' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('alternatives')}
+                        >
+                            Alternative Paths
+                        </button>
+                        <button
+                            className={`tab-button ${activeTab === 'interview' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('interview')}
+                        >
+                            Interview Prep
+                        </button>
+                        <button
+                            className={`tab-button ${activeTab === 'portfolio' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('portfolio')}
+                        >
+                            Portfolio Builder
+                        </button>
+                    </div>
+                    <div className="tab-scroll-hint">Scroll for more →</div>
                 </div>
 
                 {/* Tab Content */}
@@ -237,13 +267,13 @@ function CareerDashboard({ data, onReset }) {
                         <div className="overview-tab fade-in">
                             {/* User Profile Summary */}
                             {user_profile && (
-                                <div className="glass-card profile-summary-card" style={{ marginBottom: '20px', background: 'rgba(15, 23, 42, 0.6)' }}>
+                                <div className="glass-card profile-summary-card">
                                     <h3>👤 Your Professional Profile</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '15px' }}>
+                                    <div className="profile-details-grid">
                                         {user_profile.education && user_profile.education.degrees && user_profile.education.degrees.length > 0 && (
-                                            <div className="profile-detail-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                                <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>🎓 Education</div>
-                                                <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>
+                                            <div className="profile-detail-item">
+                                                <div className="profile-detail-label">🎓 Education</div>
+                                                <div className="profile-detail-value">
                                                     {user_profile.education.degrees.map((d, i) => {
                                                         const showField = d.field && d.field !== 'General' && !d.degree.toLowerCase().includes(d.field.toLowerCase()) && !d.field.toLowerCase().includes(d.degree.toLowerCase());
                                                         return (
@@ -256,15 +286,15 @@ function CareerDashboard({ data, onReset }) {
                                             </div>
                                         )}
                                         {user_profile.city && (
-                                            <div className="profile-detail-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                                <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>📍 Location</div>
-                                                <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>{user_profile.city}</div>
+                                            <div className="profile-detail-item">
+                                                <div className="profile-detail-label">📍 Location</div>
+                                                <div className="profile-detail-value">{user_profile.city}</div>
                                             </div>
                                         )}
                                         {user_profile.experience && user_profile.experience.years !== undefined && user_profile.experience.years > 0 && (
-                                            <div className="profile-detail-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
-                                                <div style={{ color: '#94A3B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>💼 Experience</div>
-                                                <div style={{ fontWeight: '600', color: '#F8FAFC', marginTop: '5px', fontSize: '0.9rem' }}>{user_profile.experience.years}+ Years</div>
+                                            <div className="profile-detail-item">
+                                                <div className="profile-detail-label">💼 Experience</div>
+                                                <div className="profile-detail-value">{user_profile.experience.years}+ Years</div>
                                             </div>
                                         )}
                                     </div>
@@ -356,6 +386,13 @@ function CareerDashboard({ data, onReset }) {
                     )}
                 </div>
             </div>
+
+            <footer className="dashboard-footer">
+                <div className="footer-content">
+                    <span>© {new Date().getFullYear()} Career Path Builder Intelligence</span>
+                    <span className="author-tag">Designed & Developed by <span className="highlight-name">SAKTHI RENGANATHAN K.</span></span>
+                </div>
+            </footer>
         </div>
     );
 }

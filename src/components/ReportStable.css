@@ -2,21 +2,50 @@
    DISABLE FLOATING & FIX RESPONSIVE LAYOUT
    ============================================ */
 
-/* Disable all floating animations */
+/* Disable all background animations and decorations */
 .report-viewer::before,
 .report-viewer::after,
 .floating-orbs,
 .orb,
 .orb-1,
 .orb-2,
-.orb-3 {
+.orb-3,
+.score-circle::before,
+.score-circle::after,
+.score-value::before,
+.score-value::after,
+.premium-card::before,
+.premium-card::after,
+.report-section::before,
+.report-section::after {
     display: none !important;
+    content: none !important;
     animation: none !important;
+    background: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
-/* Disable float animation on score */
-.score-value {
+/* Fix background to be solid/simple gradient without animation */
+.report-viewer {
+    background: #0f172a !important; /* Solid dark background */
     animation: none !important;
+    perspective: none !important;
+}
+
+/* Disable float animation on score and all other elements */
+.score-value,
+.report-header-enhanced,
+.premium-card,
+.report-section,
+.skill-badge-enhanced,
+.company-card,
+.tip-card,
+.resource-card,
+.cta-section {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
 }
 
 /* Disable particle float */
@@ -119,13 +148,20 @@ body {
     transform: translateY(-6px) scale(1.02) !important;
 }
 
-/* Remove 3D rotations that might cause overflow */
+/* Disable 3D rotations and hover transforms entirely */
 .report-header-enhanced:hover,
 .premium-card:hover,
 .report-section:hover,
 .strategy-phase:hover,
-.timeline-item:hover {
-    transform: translateY(-4px) !important;
+.timeline-item:hover,
+.company-card:hover,
+.tip-card:hover,
+.resource-card:hover,
+.link-card:hover,
+.cta-button:hover,
+.action-btn:hover {
+    transform: none !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Disable parallax on mobile */

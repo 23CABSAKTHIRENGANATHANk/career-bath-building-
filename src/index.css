@@ -683,17 +683,10 @@ h6 {
   width: auto !important;
 }
 
-/* Remove any transforms that might rotate text */
-/* Remove any transforms that might rotate text - BUT allow layout transforms */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-label {
-  transform: none !important;
-  rotate: none !important;
+/* Remove any rotation that might affect text readability */
+/* NOTE: We intentionally do NOT use transform:none here, as that breaks hover/animation transforms */
+h1, h2, h3, h4, h5, h6, label {
+    rotate: none;
 }
 
 /* ============================================
@@ -742,4 +735,26 @@ label {
     margin-top: 20px;
     max-width: 100% !important;
   }
+
+  /* Touch-friendly minimum tap target size */
+  button, a, [role="button"] {
+    min-height: 40px;
+  }
+
+  /* Prevent images from overflowing */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Chart and SVG overflow guard */
+  canvas, svg {
+    max-width: 100% !important;
+  }
+
+  /* Glass cards full width on mobile */
+  .glass-card { padding: 1rem; }
+
+  /* Skill gap chart, roadmap containers */
+  .lr-timeline-item { overflow: hidden; }
 }

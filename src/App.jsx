@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
+import LandingPage from './components/LandingPage';
 import ProfileForm from './components/ProfileForm';
 import CareerDashboard from './components/CareerDashboard';
 import CareerReport from './components/CareerReport';
 import ErrorBoundary from './components/ErrorBoundary';
 import ChatMentor from './components/ChatMentor';
-import LandingPage from './components/LandingPage';
 
 function App() {
     // Initialize state from localStorage if available
@@ -23,7 +22,6 @@ function App() {
 
     const handleAnalysisComplete = (data) => {
         setAnalysisData(data);
-        // Persist to localStorage
         try {
             localStorage.setItem('careerAnalysisData', JSON.stringify(data));
         } catch (e) {
@@ -34,7 +32,6 @@ function App() {
     const handleReset = () => {
         setAnalysisData(null);
         setLoading(false);
-        // Clear from localStorage
         try {
             localStorage.removeItem('careerAnalysisData');
         } catch (e) {
@@ -47,7 +44,10 @@ function App() {
             <Router>
                 <div className="app">
                     <Routes>
+                        {/* Landing page is the root route */}
                         <Route path="/" element={<LandingPage />} />
+
+                        {/* Profile form at /start */}
                         <Route
                             path="/start"
                             element={
@@ -57,21 +57,30 @@ function App() {
                                 />
                             }
                         />
+
+                        {/* Dashboard */}
                         <Route
                             path="/dashboard"
                             element={
                                 analysisData ? (
                                     <CareerDashboard data={analysisData} onReset={handleReset} />
                                 ) : (
-                                    <Navigate to="/start" replace />
+                                    <Navigate to="/" replace />
                                 )
                             }
                         />
+
+                        {/* Report */}
                         <Route
                             path="/report"
                             element={<CareerReport data={analysisData} />}
                         />
+
+                        {/* Catch-all redirect to landing */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
+
+                    {/* Chat Mentor available on all pages */}
                     <ChatMentor userData={analysisData} />
                 </div>
             </Router>
