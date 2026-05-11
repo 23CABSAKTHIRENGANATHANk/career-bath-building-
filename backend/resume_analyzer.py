@@ -7,12 +7,8 @@ import re
 import json
 import datetime
 import os
-import tempfile
 from pathlib import Path
 import docx
-
-# Set up NLTK before any imports to ensure /tmp is used
-os.environ['NLTK_DATA'] = '/tmp/nltk_data'
 
 try:
     import fitz  # PyMuPDF
@@ -23,22 +19,34 @@ except ImportError:
 
 import PyPDF2  # Fallback
 from pdfminer.high_level import extract_text as extract_text_pdf
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+
 import ssl
 import logging
 
 # Configure local logging for module errors
 logger = logging.getLogger(__name__)
 
-# Configure NLTK path for Vercel
-nltk.data.path.insert(0, '/tmp/nltk_data')
+# Set NLTK path before attempting any NLTK operations
+os.environ['NLTK_DATA'] = '/tmp/nltk_data'
+os.environ['HOME'] = '/tmp'  # Force HOME to /tmp to prevent write attempts to system home
 
 class ResumeAnalyzer:
+    # Pre-defined stopwords to avoid NLTK downloads
+    DEFAULT_STOPWORDS = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+        'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'be', 'been',
+        'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+        'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that',
+        'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me',
+        'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our',
+        'their', 'if', 'which', 'who', 'whom', 'where', 'when', 'why', 'how',
+        'all', 'each', 'every', 'both', 'few', 'more', 'most', 'some', 'such',
+        'no', 'nor', 'not', 'only', 'same', 'so', 'than', 'too', 'very', 'just'
+    }
+
     def __init__(self):
-        # Initial NLTK setup performed lazily
-        self._nltk_setup = False
+        # Don't use lazy NLTK setup - skip it entirely on Vercel
+        self._nltk_setup = True  # Mark as already done to skip _setup_nltk()
 
         # Load career data for skill matching
         try:
@@ -49,36 +57,8 @@ class ResumeAnalyzer:
             logger.error(f"Failed to load career data: {e}")
             self.career_data = {'career_paths': {}, 'skill_categories': {'soft_skills': []}}
 
-        # Ensure NLTK data is available in serverless (Vercel) environments
-        if os.environ.get('VERCEL') or os.environ.get('RENDER'):
-            try:
-                # Ensure /tmp/nltk_data exists
-                nltk_path = Path('/tmp/nltk_data')
-                nltk_path.mkdir(exist_ok=True, parents=True)
-                
-                # Setup SSL for downloads
-                try:
-                    _create_unverified_https_context = ssl._create_unverified_context
-                except AttributeError:
-                    pass
-                else:
-                    ssl._create_default_https_context = _create_unverified_https_context
-                
-                # Download NLTK resources if missing
-                for resource in ['punkt', 'stopwords', 'averaged_perceptron_tagger']:
-                    try:
-                        if 'tokenizers' in resource or resource == 'punkt':
-                            nltk.data.find(f'tokenizers/{resource}')
-                        else:
-                            nltk.data.find(f'corpora/{resource}') if resource != 'averaged_perceptron_tagger' else nltk.data.find(f'taggers/{resource}')
-                    except LookupError:
-                        print(f"Downloading NLTK {resource}...")
-                        try:
-                            nltk.download(resource, download_dir='/tmp/nltk_data', quiet=True)
-                        except Exception as dl_err:
-                            logger.warning(f"Failed to download NLTK {resource}: {dl_err}")
-            except Exception as e:
-                logger.warning(f"NLTK setup failed (non-critical): {e}")
+        # Use pre-defined stopwords to avoid NLTK downloads
+        self.stop_words = self.DEFAULT_STOPWORDS
         
         # Build comprehensive skill list
         self.all_skills = set()
@@ -89,23 +69,16 @@ class ResumeAnalyzer:
         for category_skills in self.career_data.get('skill_categories', {}).values():
             self.all_skills.update(category_skills)
 
-        try:
-            self.stop_words = set(stopwords.words('english'))
-        except:
-            # Fallback to a basic stopword list if NLTK download fails
-            self.stop_words = {
-                'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-                'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'be', 'been',
-                'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
-                'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that',
-                'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they'
-            }
-
     def _setup_nltk(self):
-        """Lazy NLTK setup to prevent module-level delays or SSL issues"""
+        """Lazy NLTK setup - DISABLED on Vercel to prevent filesystem access"""
+        # Skip NLTK setup entirely on Vercel/RENDER
+        if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+            return  # Skip completely on serverless
+        
         if self._nltk_setup:
             return
-            
+        
+        # This code only runs on local development
         try:
             _create_unverified_https_context = ssl._create_unverified_context
         except AttributeError:
@@ -113,18 +86,13 @@ class ResumeAnalyzer:
         else:
             ssl._create_default_https_context = _create_unverified_https_context
 
-        # Try to find NLTK data, download if missing
+        # Try to find NLTK data, but don't error if it fails
         try:
+            import nltk
             nltk.data.find('tokenizers/punkt')
             nltk.data.find('corpora/stopwords')
-            nltk.data.find('taggers/averaged_perceptron_tagger')
-        except LookupError:
-            try:
-                print("Downloading missing NLTK data to /tmp/nltk_data...")
-                for resource in ['punkt', 'stopwords', 'averaged_perceptron_tagger']:
-                    nltk.download(resource, download_dir='/tmp/nltk_data', quiet=True)
-            except Exception as e:
-                logger.warning(f"NLTK download failed (non-critical): {e}")
+        except:
+            pass  # Silently fail - we have fallback stopwords
             
         self._nltk_setup = True
 

@@ -2,10 +2,18 @@
 Enhanced Flask Backend with Health Monitoring
 """
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
 from pathlib import Path
+
+# CRITICAL: Set environment variables BEFORE importing modules
+if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+    os.environ['NLTK_DATA'] = '/tmp/nltk_data'
+    os.environ['HOME'] = '/tmp'  # Force HOME to /tmp for serverless
+    os.makedirs('/tmp/nltk_data', exist_ok=True)
+    os.makedirs('/tmp/uploads', exist_ok=True)
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import json
 import time
 import random
@@ -21,11 +29,6 @@ app = Flask(__name__)
 # Allow CORS from environment variable or default to all origins
 CORS_ORIGIN = os.getenv('CORS_ORIGIN', '*')
 CORS(app, resources={r"/api/*": {"origins": CORS_ORIGIN}})
-
-# Set NLTK data path for read-only serverless environments
-if os.environ.get('VERCEL') or os.environ.get('RENDER'):
-    os.environ['NLTK_DATA'] = '/tmp/nltk_data'
-    os.makedirs('/tmp/nltk_data', exist_ok=True)
 
 # Initialize AI modules with error handling
 try:
