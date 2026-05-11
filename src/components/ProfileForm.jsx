@@ -199,8 +199,9 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                     
                     // Check if response is JSON
                     if (data && typeof data === 'object') {
-                        errorMessage = data.error || data.message || `Server error (${status})`;
-                        errorDetails = data.details || data.code || '';
+                        // Ensure error and message are strings
+                        errorMessage = String(data.error || data.message || `Server error (${status})`);
+                        errorDetails = String(data.details || data.code || '');
                     } else if (typeof data === 'string') {
                         // Check if it's HTML (error page)
                         if (data.includes('<!') || data.includes('<html')) {
@@ -216,14 +217,15 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                 } else if (error.code === 'ECONNABORTED') {
                     errorMessage = 'Request timeout: Server took too long to respond. Please try again.';
                 } else if (error.message) {
-                    errorMessage = error.message;
+                    errorMessage = String(error.message);
                 }
             } catch (parseError) {
                 console.error('Error parsing error response:', parseError);
                 errorMessage = 'An unexpected error occurred. Please try again.';
             }
 
-            const fullError = errorDetails ? `${errorMessage}\n\nDetails: ${errorDetails}` : errorMessage;
+            // Ensure fullError is always a string
+            const fullError = errorDetails && errorDetails !== '' ? `${String(errorMessage)}\n\nDetails: ${String(errorDetails)}` : String(errorMessage);
             console.error('Final error message:', fullError);
             
             alert(`Upload Failed:\n\n${fullError}`);
