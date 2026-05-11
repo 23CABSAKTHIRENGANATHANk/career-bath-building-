@@ -108,25 +108,9 @@ def health_check():
         }
     })
 
-@app.route('/', methods=['GET'])
-def root():
-    """Root endpoint"""
-    return jsonify({
-        'status': 'running',
-        'message': 'AI Career Intelligence System Backend',
-        'version': '1.0.0',
-        'endpoints': {
-            'health': '/api/health',
-            'upload_resume': '/api/upload-resume',
-            'analyze_profile': '/api/analyze-profile',
-            'career_paths': '/api/career-paths',
-            'skills': '/api/skills',
-            'chat': '/api/chat',
-            'mentor_advice': '/api/mentor-advice',
-            'jobs': '/api/jobs',
-            'interview_prep': '/api/interview-prep'
-        }
-    })
+@app.route("/")
+def home():
+    return "Backend Running"
 
 @app.route('/api/upload-resume', methods=['POST'])
 def upload_resume():
