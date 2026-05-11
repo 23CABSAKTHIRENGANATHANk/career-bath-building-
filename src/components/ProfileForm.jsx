@@ -131,6 +131,9 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
         formDataUpload.append('resume', file);
 
         try {
+            console.log(`Uploading resume to: ${API_URL}/upload-resume`);
+            console.log(`File: ${file.name}, Size: ${file.size} bytes, Type: ${file.type}`);
+            
             const response = await axios.post(`${API_URL}/upload-resume`, formDataUpload, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -138,10 +141,13 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                 onUploadProgress: (progressEvent) => {
                     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgress(percentCompleted);
-                }
+                },
+                timeout: 60000 // 60 second timeout for uploads
             });
 
-            if (response.data.success) {
+            console.log('Upload response:', response.data);
+
+            if (response.data && response.data.success) {
                 setResumeData(response.data.data);
                 setUploadProgress(100);
 
@@ -161,26 +167,66 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                     github: data.contact?.social?.github || prev.github,
                     portfolio: data.contact?.social?.portfolio || prev.portfolio
                 }));
-            } else {
-                throw new Error(response.data.error || 'Upload failed');
+                
+                alert('Resume uploaded and analyzed successfully!');
+                return;
             }
+
+            // If we get here, success was false
+            const errorMsg = response.data?.error || response.data?.message || 'Unknown error from server';
+            throw new Error(errorMsg);
+
         } catch (error) {
-            console.error('Error uploading resume:', error);
-            let errorMessage = 'Failed to upload resume. Please try again.';
+            console.error('Resume upload error:', error);
             
-            // Extract error message more robustly
-            if (error.response?.data) {
-                const data = error.response.data;
-                if (typeof data === 'object' && data !== null) {
-                    errorMessage = data.error || data.message || 'Upload failed';
-                } else if (typeof data === 'string') {
-                    errorMessage = data;
+            let errorMessage = 'Failed to upload resume.';
+            let errorDetails = '';
+
+            // Log the full error object for debugging
+            console.error('Full error object:', {
+                message: error.message,
+                code: error.code,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                headers: error.response?.headers
+            });
+
+            try {
+                // Try to extract error message from different possible responses
+                if (error.response) {
+                    const { status, data } = error.response;
+                    
+                    // Check if response is JSON
+                    if (data && typeof data === 'object') {
+                        errorMessage = data.error || data.message || `Server error (${status})`;
+                        errorDetails = data.details || data.code || '';
+                    } else if (typeof data === 'string') {
+                        // Check if it's HTML (error page)
+                        if (data.includes('<!') || data.includes('<html')) {
+                            errorMessage = `Server error: ${status}. Backend service may be unavailable.`;
+                        } else {
+                            errorMessage = data;
+                        }
+                    } else {
+                        errorMessage = `Server error: ${status} ${error.response.statusText || ''}`;
+                    }
+                } else if (error.message === 'Network Error') {
+                    errorMessage = 'Network error: Backend service is unreachable. Please check your internet connection.';
+                } else if (error.code === 'ECONNABORTED') {
+                    errorMessage = 'Request timeout: Server took too long to respond. Please try again.';
+                } else if (error.message) {
+                    errorMessage = error.message;
                 }
-            } else if (error.message) {
-                errorMessage = error.message;
+            } catch (parseError) {
+                console.error('Error parsing error response:', parseError);
+                errorMessage = 'An unexpected error occurred. Please try again.';
             }
+
+            const fullError = errorDetails ? `${errorMessage}\n\nDetails: ${errorDetails}` : errorMessage;
+            console.error('Final error message:', fullError);
             
-            alert(`Upload Failed: ${errorMessage}`);
+            alert(`Upload Failed:\n\n${fullError}`);
             setUploadProgress(0);
             setResumeFile(null);
         }

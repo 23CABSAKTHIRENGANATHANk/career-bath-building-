@@ -27,12 +27,21 @@ if os.environ.get('VERCEL') or os.environ.get('RENDER'):
     os.environ['NLTK_DATA'] = '/tmp/nltk_data'
     os.makedirs('/tmp/nltk_data', exist_ok=True)
 
-# Initialize AI modules
-resume_analyzer = ResumeAnalyzer()
-career_engine = CareerEngine()
-skill_analyzer = SkillAnalyzer()
-roadmap_generator = RoadmapGenerator()
-mentor_engine = MentorEngine()
+# Initialize AI modules with error handling
+try:
+    resume_analyzer = ResumeAnalyzer()
+    career_engine = CareerEngine()
+    skill_analyzer = SkillAnalyzer()
+    roadmap_generator = RoadmapGenerator()
+    mentor_engine = MentorEngine()
+    print("✅ All AI modules initialized successfully")
+except Exception as e:
+    print(f"⚠️ Error initializing AI modules: {e}")
+    resume_analyzer = None
+    career_engine = None
+    skill_analyzer = None
+    roadmap_generator = None
+    mentor_engine = None
 
 # Configure upload folder for read-only environments
 if os.environ.get('VERCEL') or os.environ.get('RENDER'):
@@ -51,6 +60,38 @@ server_stats = {
     'resumes_analyzed': 0,
     'profiles_analyzed': 0
 }
+
+# Error handlers - ensure all responses are JSON
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({
+        'success': False,
+        'error': 'Endpoint not found',
+        'code': 'NOT_FOUND'
+    }), 404
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return jsonify({
+        'success': False,
+        'error': 'Method not allowed',
+        'code': 'METHOD_NOT_ALLOWED'
+    }), 405
+
+@app.errorhandler(500)
+def internal_error(e):
+    print(f"❌ Internal server error: {e}")
+    return jsonify({
+        'success': False,
+        'error': 'Internal server error',
+        'code': 'INTERNAL_ERROR'
+    }), 500
+
+@app.before_request
+def before_request():
+    """Log incoming requests for debugging"""
+    if os.environ.get('DEBUG'):
+        print(f"📨 {request.method} {request.path}")
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

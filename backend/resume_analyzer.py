@@ -6,6 +6,7 @@ Enhanced with robust PDF extraction, PyPDF2 fallback, and improved NLTK handling
 import re
 import json
 import datetime
+import os
 from pathlib import Path
 import docx
 try:

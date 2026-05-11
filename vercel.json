@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "builds": [
     {
       "src": "package.json",
@@ -9,14 +11,18 @@
       }
     },
     {
-      "src": "backend/app.py",
-      "use": "@vercel/python"
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.11"
+      }
     }
   ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/app.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/(.*)",
@@ -24,8 +30,14 @@
     }
   ],
   "functions": {
-    "backend/app.py": {
-      "includeFiles": "backend/data/**"
+    "api/index.py": {
+      "maxDuration": 60,
+      "memory": 1024,
+      "includeFiles": "backend/**"
     }
+  },
+  "env": {
+    "PYTHONUNBUFFERED": "1",
+    "VERCEL": "1"
   }
 }
