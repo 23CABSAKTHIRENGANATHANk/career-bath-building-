@@ -116,9 +116,16 @@ def upload_resume():
         try:
             # Analyze resume
             resume_data = resume_analyzer.analyze(file_path=str(filepath))
-            
+
+            # Check for essential extracted data
+            has_skills = resume_data.get('skills', {}).get('technical') or resume_data.get('skills', {}).get('soft')
+            has_education = resume_data.get('education', {}).get('degrees')
+            has_contact = resume_data.get('contact', {}).get('name') and resume_data.get('contact', {}).get('email')
+            if not (has_skills or has_education or has_contact):
+                return jsonify({'error': 'Could not extract any useful information from your resume. Please upload a text-based PDF or DOCX file.'}), 400
+
             server_stats['resumes_analyzed'] += 1
-            
+
             return jsonify({
                 'success': True,
                 'data': resume_data,
