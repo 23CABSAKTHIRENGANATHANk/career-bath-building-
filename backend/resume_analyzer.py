@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class ResumeAnalyzer:
     def __init__(self):
         # Initial NLTK setup performed lazily
-        self._setup_nltk()
+        self._nltk_setup = False
 
         # Load career data for skill matching
         try:
@@ -56,6 +56,9 @@ class ResumeAnalyzer:
 
     def _setup_nltk(self):
         """Lazy NLTK setup to prevent module-level delays or SSL issues"""
+        if self._nltk_setup:
+            return
+            
         try:
             _create_unverified_https_context = ssl._create_unverified_context
         except AttributeError:
@@ -72,6 +75,8 @@ class ResumeAnalyzer:
             nltk.download('punkt', quiet=True)
             nltk.download('stopwords', quiet=True)
             nltk.download('averaged_perceptron_tagger', quiet=True)
+            
+        self._nltk_setup = True
 
     def extract_text(self, file_path):
         """Robust text extraction from PDF or DOCX with fallbacks"""
@@ -295,6 +300,7 @@ class ResumeAnalyzer:
         return round(total_months / 12, 1)
 
     def analyze(self, file_path=None, text=None):
+        self._setup_nltk()
         if file_path:
             text = self.extract_text(file_path)
         elif not text:
