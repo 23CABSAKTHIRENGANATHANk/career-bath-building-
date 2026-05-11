@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './InterviewPrep.css';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function InterviewPrep({ career }) {
     const [prepData, setPrepData] = useState(null);
@@ -36,7 +36,7 @@ function InterviewPrep({ career }) {
     const fetchPrepData = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(`${API_URL}/api/interview-prep`, { career });
+            const response = await axios.post(`${API_URL}/interview-prep`, { career });
             if (response.data.success) {
                 setPrepData(response.data);
             }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './ChatMentor.css';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function ChatMentor({ userData }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +34,7 @@ function ChatMentor({ userData }) {
 
     const fetchInitialAdvice = async () => {
         try {
-            const response = await axios.post(`${API_URL}/api/mentor-advice`, userData);
+            const response = await axios.post(`${API_URL}/mentor-advice`, userData);
             if (response.data.success) {
                 setMessages([{
                     text: response.data.advice,
@@ -62,7 +62,7 @@ function ChatMentor({ userData }) {
         setIsLoading(true);
 
         try {
-            const response = await axios.post(`${API_URL}/api/chat`, {
+            const response = await axios.post(`${API_URL}/chat`, {
                 message: input,
                 context: userData?.career_recommendation || {}
             });

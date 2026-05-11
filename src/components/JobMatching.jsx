@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './JobMatching.css';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function JobMatching({ career, city }) {
     const [jobs, setJobs] = useState([]);
@@ -31,7 +31,7 @@ function JobMatching({ career, city }) {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.post(`${API_URL}/api/jobs`, { career, city });
+            const response = await axios.post(`${API_URL}/jobs`, { career, city });
             if (response.data.success) {
                 setJobs(response.data.jobs);
             }

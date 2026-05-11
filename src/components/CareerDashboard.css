@@ -414,7 +414,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    marginTop: 15px;
+    margin-top: 15px;
 }
 
 .profile-detail-item {
