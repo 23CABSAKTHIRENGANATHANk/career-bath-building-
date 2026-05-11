@@ -10,6 +10,7 @@ sys.path.append(str(root_dir / "backend"))
 os.environ['NLTK_DATA'] = '/tmp/nltk_data'
 
 # Now we can import the app
+# pyrefly: ignore [missing-import]
 from app import app
 
 # This is required for Vercel to handle the app as a serverless function
