@@ -151,7 +151,26 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
             }
         } catch (error) {
             console.error('Error uploading resume:', error);
-            const errorMessage = error.response?.data?.error || error.message || 'Failed to upload resume. Please try again.';
+            let errorMessage = 'Failed to upload resume. Please try again.';
+            if (error.response) {
+                // Try to parse error message from backend
+                if (error.response.data) {
+                    if (typeof error.response.data === 'string') {
+                        try {
+                            const parsed = JSON.parse(error.response.data);
+                            errorMessage = parsed.error || parsed.message || errorMessage;
+                        } catch (e) {
+                            errorMessage = error.response.data;
+                        }
+                    } else {
+                        errorMessage = error.response.data.error || error.response.data.message || errorMessage;
+                    }
+                } else {
+                    errorMessage = error.response.statusText || errorMessage;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
             alert(`Upload Failed: ${errorMessage}`);
             setUploadProgress(0);
         }
