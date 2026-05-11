@@ -17,5 +17,6 @@ except ImportError as e:
     print(f"Error importing Flask app: {e}")
     raise
 
-# Export the Flask app for Vercel
-__all__ = ['app']
+# Export the Flask app for Vercel (both app and application for compatibility)
+__all__ = ['app', 'application']
+application = app
