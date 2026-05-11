@@ -22,6 +22,11 @@ app = Flask(__name__)
 CORS_ORIGIN = os.getenv('CORS_ORIGIN', '*')
 CORS(app, resources={r"/api/*": {"origins": CORS_ORIGIN}})
 
+# Set NLTK data path for read-only serverless environments
+if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+    os.environ['NLTK_DATA'] = '/tmp/nltk_data'
+    os.makedirs('/tmp/nltk_data', exist_ok=True)
+
 # Initialize AI modules
 resume_analyzer = ResumeAnalyzer()
 career_engine = CareerEngine()
