@@ -7,7 +7,21 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
+
+// Add response interceptor for better error handling
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    // Check if backend is unavailable
+    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+      console.error('Backend service unavailable');
+      error.message = 'Backend service is unavailable. Please check your connection.';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const apiService = {
   // Health Check
@@ -37,6 +51,7 @@ export const apiService = {
         'Content-Type': 'multipart/form-data',
       },
       onUploadProgress,
+      timeout: 60000, // Longer timeout for file uploads
     });
     return response.data;
   },

@@ -111,6 +111,19 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Validate file on client-side first
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+        if (!allowedTypes.includes(file.type)) {
+            const ext = file.name.split('.').pop().toUpperCase();
+            alert(`Invalid file format: ${ext}. Please upload a PDF or DOCX file.`);
+            return;
+        }
+
+        if (file.size > 16 * 1024 * 1024) {
+            alert('File too large. Maximum size is 16MB.');
+            return;
+        }
+
         setResumeFile(file);
         setUploadProgress(10);
 
@@ -136,8 +149,8 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                 const data = response.data.data;
                 setFormData(prev => ({
                     ...prev,
-                    technical_skills: [...new Set([...(prev.technical_skills ? prev.technical_skills.split(',').map(s => s.trim()).filter(s => s) : []), ...data.skills.technical])].join(', '),
-                    soft_skills: [...new Set([...(prev.soft_skills ? prev.soft_skills.split(',').map(s => s.trim()).filter(s => s) : []), ...data.skills.soft])].join(', '),
+                    technical_skills: [...new Set([...(prev.technical_skills ? prev.technical_skills.split(',').map(s => s.trim()).filter(s => s) : []), ...(data.skills?.technical || [])])].join(', '),
+                    soft_skills: [...new Set([...(prev.soft_skills ? prev.soft_skills.split(',').map(s => s.trim()).filter(s => s) : []), ...(data.skills?.soft || [])])].join(', '),
                     certifications: (data.certifications || []).join(', '),
                     degrees: data.education?.degrees ? [...new Set(data.education.degrees.map(d => {
                         return (d.field && d.field !== 'General') ? `${d.degree} in ${d.field}` : d.degree;
@@ -148,33 +161,28 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                     github: data.contact?.social?.github || prev.github,
                     portfolio: data.contact?.social?.portfolio || prev.portfolio
                 }));
+            } else {
+                throw new Error(response.data.error || 'Upload failed');
             }
         } catch (error) {
             console.error('Error uploading resume:', error);
             let errorMessage = 'Failed to upload resume. Please try again.';
-            if (error.response) {
-                // Try to parse error message from backend
-                if (error.response.data) {
-                    if (typeof error.response.data === 'string') {
-                        try {
-                            const parsed = JSON.parse(error.response.data);
-                            errorMessage = parsed.error || parsed.message || errorMessage;
-                        } catch (e) {
-                            errorMessage = error.response.data;
-                        }
-                    } else if (typeof error.response.data === 'object') {
-                        errorMessage = error.response.data.error || error.response.data.message || JSON.stringify(error.response.data);
-                    } else {
-                        errorMessage = String(error.response.data);
-                    }
-                } else {
-                    errorMessage = error.response.statusText || errorMessage;
+            
+            // Extract error message more robustly
+            if (error.response?.data) {
+                const data = error.response.data;
+                if (typeof data === 'object' && data !== null) {
+                    errorMessage = data.error || data.message || 'Upload failed';
+                } else if (typeof data === 'string') {
+                    errorMessage = data;
                 }
             } else if (error.message) {
                 errorMessage = error.message;
             }
+            
             alert(`Upload Failed: ${errorMessage}`);
             setUploadProgress(0);
+            setResumeFile(null);
         }
     };
 

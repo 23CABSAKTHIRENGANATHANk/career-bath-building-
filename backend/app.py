@@ -90,28 +90,71 @@ def root():
 @app.route('/api/upload-resume', methods=['POST'])
 def upload_resume():
     """Handle resume file upload and analysis"""
+    import traceback
+    import logging
+    
     try:
         server_stats['requests_processed'] += 1
         
+        # Validate file exists
         if 'resume' not in request.files:
-            return jsonify({'error': 'No resume file provided'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No resume file provided',
+                'code': 'NO_FILE'
+            }), 400
         
         file = request.files['resume']
         
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No file selected',
+                'code': 'EMPTY_FILE'
+            }), 400
         
         # Check file extension
         allowed_extensions = {'.pdf', '.docx', '.doc'}
         file_ext = Path(file.filename).suffix.lower()
         
         if file_ext not in allowed_extensions:
-            return jsonify({'error': 'Invalid file format. Please upload PDF or DOCX'}), 400
+            return jsonify({
+                'success': False,
+                'error': f'Invalid file format. Allowed: PDF, DOCX. Got: {file_ext}',
+                'code': 'INVALID_FORMAT'
+            }), 400
+        
+        # Validate file size (max 16MB)
+        file.seek(0, 2)  # Seek to end
+        file_size = file.tell()
+        file.seek(0)  # Reset to beginning
+        
+        if file_size > 16 * 1024 * 1024:
+            return jsonify({
+                'success': False,
+                'error': 'File too large. Maximum size: 16MB',
+                'code': 'FILE_TOO_LARGE'
+            }), 413
+        
+        if file_size == 0:
+            return jsonify({
+                'success': False,
+                'error': 'File is empty',
+                'code': 'EMPTY_FILE'
+            }), 400
         
         # Save file
         filename = f"resume_{os.urandom(8).hex()}{file_ext}"
         filepath = app.config['UPLOAD_FOLDER'] / filename
-        file.save(filepath)
+        
+        try:
+            file.save(str(filepath))
+        except Exception as save_error:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to save file: {str(save_error)}',
+                'code': 'SAVE_ERROR'
+            }), 500
         
         try:
             # Analyze resume
@@ -120,9 +163,14 @@ def upload_resume():
             # Check for essential extracted data
             has_skills = resume_data.get('skills', {}).get('technical') or resume_data.get('skills', {}).get('soft')
             has_education = resume_data.get('education', {}).get('degrees')
-            has_contact = resume_data.get('contact', {}).get('name') and resume_data.get('contact', {}).get('email')
+            has_contact = resume_data.get('contact', {}).get('name') or resume_data.get('contact', {}).get('email')
+            
             if not (has_skills or has_education or has_contact):
-                return jsonify({'error': 'Could not extract any useful information from your resume. Please upload a text-based PDF or DOCX file.'}), 400
+                return jsonify({
+                    'success': False,
+                    'error': 'Could not extract useful information from resume. Ensure it is a text-based PDF or DOCX.',
+                    'code': 'NO_DATA_EXTRACTED'
+                }), 400
 
             server_stats['resumes_analyzed'] += 1
 
@@ -130,29 +178,45 @@ def upload_resume():
                 'success': True,
                 'data': resume_data,
                 'message': 'Resume analyzed successfully!'
-            })
+            }), 200
+            
+        except ValueError as ve:
+            # Expected errors like unsupported format
+            return jsonify({
+                'success': False,
+                'error': str(ve),
+                'code': 'ANALYSIS_ERROR'
+            }), 400
+        except Exception as analysis_error:
+            error_msg = str(analysis_error)
+            return jsonify({
+                'success': False,
+                'error': f'Resume analysis failed: {error_msg}',
+                'code': 'ANALYSIS_ERROR'
+            }), 500
         finally:
             # Always clean up file after analysis attempt
-            if filepath.exists():
-                try:
+            try:
+                if filepath.exists():
                     os.remove(filepath)
-                except Exception as e:
-                    print(f"⚠️ Could not remove temporary file {filepath}: {e}")
+            except Exception as cleanup_error:
+                print(f"⚠️ Could not remove temporary file {filepath}: {cleanup_error}")
     
-    except ValueError as ve:
-        # Expected errors like unsupported format
-        return jsonify({'error': str(ve)}), 400
     except Exception as e:
-        import traceback
-        import logging
-        if os.environ.get('VERCEL'):
-            logging.basicConfig(level=logging.ERROR)
-        else:
-            logging.basicConfig(filename='error.log', level=logging.ERROR)
-        logging.error(f"Error processing resume: {str(e)}\n{traceback.format_exc()}")
-        print(f"❌ Error processing resume: {str(e)}")
-        traceback.print_exc()
-        return jsonify({'error': str(e), 'details': traceback.format_exc()}), 500
+        try:
+            error_msg = str(e) if str(e) else 'Unknown error occurred'
+            print(f"❌ Error processing resume: {error_msg}")
+            return jsonify({
+                'success': False,
+                'error': error_msg,
+                'code': 'UNKNOWN_ERROR'
+            }), 500
+        except:
+            return jsonify({
+                'success': False,
+                'error': 'An unexpected error occurred during resume processing',
+                'code': 'UNKNOWN_ERROR'
+            }), 500
 
 @app.route('/api/analyze-profile', methods=['POST'])
 def analyze_profile():
