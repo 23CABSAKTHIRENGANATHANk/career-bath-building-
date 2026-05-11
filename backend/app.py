@@ -182,8 +182,14 @@ def upload_resume():
             }), 500
         
         try:
-            # Analyze resume
-            resume_data = resume_analyzer.analyze(file_path=str(filepath))
+            # Analyze resume with timeout protection
+            try:
+                resume_data = resume_analyzer.analyze(file_path=str(filepath))
+            except Exception as analysis_error:
+                # Log error but don't crash
+                error_msg = str(analysis_error)
+                print(f"Resume analysis error: {error_msg}")
+                raise
 
             # Check for essential extracted data
             has_skills = resume_data.get('skills', {}).get('technical') or resume_data.get('skills', {}).get('soft')
@@ -212,8 +218,15 @@ def upload_resume():
                 'error': str(ve),
                 'code': 'ANALYSIS_ERROR'
             }), 400
+        except TimeoutError as te:
+            return jsonify({
+                'success': False,
+                'error': 'Resume analysis took too long. Please try with a simpler resume.',
+                'code': 'TIMEOUT_ERROR'
+            }), 504
         except Exception as analysis_error:
-            error_msg = str(analysis_error)
+            error_msg = str(analysis_error) if str(analysis_error) else type(analysis_error).__name__
+            print(f"❌ Resume analysis error: {error_msg}")
             return jsonify({
                 'success': False,
                 'error': f'Resume analysis failed: {error_msg}',
@@ -224,6 +237,7 @@ def upload_resume():
             try:
                 if filepath.exists():
                     os.remove(filepath)
+                    print(f"✓ Cleaned up temporary file {filepath}")
             except Exception as cleanup_error:
                 print(f"⚠️ Could not remove temporary file {filepath}: {cleanup_error}")
     

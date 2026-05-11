@@ -7,8 +7,13 @@ import re
 import json
 import datetime
 import os
+import tempfile
 from pathlib import Path
 import docx
+
+# Set up NLTK before any imports to ensure /tmp is used
+os.environ['NLTK_DATA'] = '/tmp/nltk_data'
+
 try:
     import fitz  # PyMuPDF
     FITZ_AVAILABLE = True
@@ -27,6 +32,9 @@ import logging
 # Configure local logging for module errors
 logger = logging.getLogger(__name__)
 
+# Configure NLTK path for Vercel
+nltk.data.path.insert(0, '/tmp/nltk_data')
+
 class ResumeAnalyzer:
     def __init__(self):
         # Initial NLTK setup performed lazily
@@ -39,27 +47,38 @@ class ResumeAnalyzer:
                 self.career_data = json.load(f)
         except Exception as e:
             logger.error(f"Failed to load career data: {e}")
+            self.career_data = {'career_paths': {}, 'skill_categories': {'soft_skills': []}}
 
         # Ensure NLTK data is available in serverless (Vercel) environments
         if os.environ.get('VERCEL') or os.environ.get('RENDER'):
             try:
-                import ssl
+                # Ensure /tmp/nltk_data exists
+                nltk_path = Path('/tmp/nltk_data')
+                nltk_path.mkdir(exist_ok=True, parents=True)
+                
+                # Setup SSL for downloads
                 try:
                     _create_unverified_https_context = ssl._create_unverified_context
                 except AttributeError:
                     pass
                 else:
                     ssl._create_default_https_context = _create_unverified_https_context
-                import nltk
-                nltk.data.path.append('/tmp/nltk_data')
-                for resource in ['punkt', 'stopwords']:
+                
+                # Download NLTK resources if missing
+                for resource in ['punkt', 'stopwords', 'averaged_perceptron_tagger']:
                     try:
-                        nltk.data.find(f'tokenizers/{resource}')
+                        if 'tokenizers' in resource or resource == 'punkt':
+                            nltk.data.find(f'tokenizers/{resource}')
+                        else:
+                            nltk.data.find(f'corpora/{resource}') if resource != 'averaged_perceptron_tagger' else nltk.data.find(f'taggers/{resource}')
                     except LookupError:
-                        nltk.download(resource, download_dir='/tmp/nltk_data')
+                        print(f"Downloading NLTK {resource}...")
+                        try:
+                            nltk.download(resource, download_dir='/tmp/nltk_data', quiet=True)
+                        except Exception as dl_err:
+                            logger.warning(f"Failed to download NLTK {resource}: {dl_err}")
             except Exception as e:
-                logger.error(f"Failed to download NLTK data: {e}")
-            self.career_data = {'career_paths': {}, 'skill_categories': {'soft_skills': []}}
+                logger.warning(f"NLTK setup failed (non-critical): {e}")
         
         # Build comprehensive skill list
         self.all_skills = set()
@@ -73,7 +92,14 @@ class ResumeAnalyzer:
         try:
             self.stop_words = set(stopwords.words('english'))
         except:
-            self.stop_words = set()
+            # Fallback to a basic stopword list if NLTK download fails
+            self.stop_words = {
+                'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+                'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'be', 'been',
+                'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+                'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that',
+                'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they'
+            }
 
     def _setup_nltk(self):
         """Lazy NLTK setup to prevent module-level delays or SSL issues"""
@@ -87,15 +113,18 @@ class ResumeAnalyzer:
         else:
             ssl._create_default_https_context = _create_unverified_https_context
 
+        # Try to find NLTK data, download if missing
         try:
             nltk.data.find('tokenizers/punkt')
             nltk.data.find('corpora/stopwords')
             nltk.data.find('taggers/averaged_perceptron_tagger')
         except LookupError:
-            print("Downloading missing NLTK data...")
-            nltk.download('punkt', quiet=True)
-            nltk.download('stopwords', quiet=True)
-            nltk.download('averaged_perceptron_tagger', quiet=True)
+            try:
+                print("Downloading missing NLTK data to /tmp/nltk_data...")
+                for resource in ['punkt', 'stopwords', 'averaged_perceptron_tagger']:
+                    nltk.download(resource, download_dir='/tmp/nltk_data', quiet=True)
+            except Exception as e:
+                logger.warning(f"NLTK download failed (non-critical): {e}")
             
         self._nltk_setup = True
 
@@ -321,7 +350,11 @@ class ResumeAnalyzer:
         return round(total_months / 12, 1)
 
     def analyze(self, file_path=None, text=None):
-        self._setup_nltk()
+        try:
+            self._setup_nltk()
+        except Exception as e:
+            logger.warning(f"NLTK setup failed, continuing without it: {e}")
+        
         if file_path:
             text = self.extract_text(file_path)
         elif not text:
