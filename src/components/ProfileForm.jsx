@@ -162,8 +162,10 @@ function ProfileForm({ onAnalysisComplete, setLoading }) {
                         } catch (e) {
                             errorMessage = error.response.data;
                         }
+                    } else if (typeof error.response.data === 'object') {
+                        errorMessage = error.response.data.error || error.response.data.message || JSON.stringify(error.response.data);
                     } else {
-                        errorMessage = error.response.data.error || error.response.data.message || errorMessage;
+                        errorMessage = String(error.response.data);
                     }
                 } else {
                     errorMessage = error.response.statusText || errorMessage;
