@@ -29,9 +29,13 @@ skill_analyzer = SkillAnalyzer()
 roadmap_generator = RoadmapGenerator()
 mentor_engine = MentorEngine()
 
-# Configure upload folder
-UPLOAD_FOLDER = Path(__file__).parent / 'uploads'
-UPLOAD_FOLDER.mkdir(exist_ok=True)
+# Configure upload folder for read-only environments
+if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+    UPLOAD_FOLDER = Path('/tmp/uploads')
+else:
+    UPLOAD_FOLDER = Path(__file__).parent / 'uploads'
+
+UPLOAD_FOLDER.mkdir(exist_ok=True, parents=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
@@ -129,7 +133,10 @@ def upload_resume():
     except Exception as e:
         import traceback
         import logging
-        logging.basicConfig(filename='error.log', level=logging.ERROR)
+        if os.environ.get('VERCEL'):
+            logging.basicConfig(level=logging.ERROR)
+        else:
+            logging.basicConfig(filename='error.log', level=logging.ERROR)
         logging.error(f"Error processing resume: {str(e)}\n{traceback.format_exc()}")
         print(f"❌ Error processing resume: {str(e)}")
         traceback.print_exc()

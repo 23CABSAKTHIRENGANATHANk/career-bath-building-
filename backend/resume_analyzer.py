@@ -8,7 +8,13 @@ import json
 import datetime
 from pathlib import Path
 import docx
-import fitz  # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+    FITZ_AVAILABLE = True
+except ImportError:
+    FITZ_AVAILABLE = False
+    print("⚠️ PyMuPDF (fitz) not available. Falling back to other PDF extractors.")
+
 import PyPDF2  # Fallback
 from pdfminer.high_level import extract_text as extract_text_pdf
 import nltk
