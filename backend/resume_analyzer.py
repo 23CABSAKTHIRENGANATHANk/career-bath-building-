@@ -38,6 +38,26 @@ class ResumeAnalyzer:
                 self.career_data = json.load(f)
         except Exception as e:
             logger.error(f"Failed to load career data: {e}")
+
+        # Ensure NLTK data is available in serverless (Vercel) environments
+        if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+            try:
+                import ssl
+                try:
+                    _create_unverified_https_context = ssl._create_unverified_context
+                except AttributeError:
+                    pass
+                else:
+                    ssl._create_default_https_context = _create_unverified_https_context
+                import nltk
+                nltk.data.path.append('/tmp/nltk_data')
+                for resource in ['punkt', 'stopwords']:
+                    try:
+                        nltk.data.find(f'tokenizers/{resource}')
+                    except LookupError:
+                        nltk.download(resource, download_dir='/tmp/nltk_data')
+            except Exception as e:
+                logger.error(f"Failed to download NLTK data: {e}")
             self.career_data = {'career_paths': {}, 'skill_categories': {'soft_skills': []}}
         
         # Build comprehensive skill list
